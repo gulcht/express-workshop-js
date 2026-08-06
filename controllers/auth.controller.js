@@ -55,7 +55,7 @@ const register = async (req, res) => {
                 fullName: newUser.fullName,
                 email: newUser.email,
                 role: newUser.role,
-                aprove: newUser.aprove,
+                isApprove: newUser.isApprove,
                 createdAt: newUser.createdAt,
                 updatedAt: newUser.updatedAt,
             },
@@ -91,7 +91,7 @@ const login = async (req, res) => {
             return;
         }
 
-        if (!user.aprove) {
+        if (!user.isApprove) {
             res.status(403).json({ message: "Your account is pending approval. Please contact the administrator to approve your account." });
             return;
         }
@@ -120,7 +120,7 @@ const login = async (req, res) => {
                 fullName: user.fullName,
                 email: user.email,
                 role: user.role,
-                aprove: user.aprove,
+                isApprove: user.isApprove,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             },

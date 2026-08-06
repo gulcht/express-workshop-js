@@ -4,6 +4,7 @@ const {
     createOrder,
     getOrders,
     getOrderById,
+    getOrderByProductId,
     updateOrderStatus,
 } = require("../controllers/order.controller.js");
 
@@ -13,6 +14,7 @@ router.use(protectRoute);
 
 router.post("/", createOrder);
 router.get("/", getOrders);
+router.get("/product/:productId", getOrderByProductId);
 router.get("/:id", getOrderById);
 router.patch("/:id/status", adminOnly, updateOrderStatus);
 

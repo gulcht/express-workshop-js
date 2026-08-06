@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
             enum: Object.values(Role),
             default: Role.USER,
         },
-        aprove: {
+        isApprove: {
             type: Boolean,
             default: false,
         },

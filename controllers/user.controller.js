@@ -18,7 +18,7 @@ const approveUser = async (req, res) => {
             return;
         }
 
-        user.aprove = true;
+        user.isApprove = true;
         await user.save();
 
         res.status(200).json({
@@ -29,7 +29,7 @@ const approveUser = async (req, res) => {
                 fullName: user.fullName,
                 email: user.email,
                 role: user.role,
-                aprove: user.aprove,
+                isApprove: user.isApprove,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             },

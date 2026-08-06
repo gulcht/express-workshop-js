@@ -167,9 +167,39 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+const getOrderByProductId = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const user = req.user;
+
+        if (!user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        let query = { "items.product": productId };
+
+        if (user.role !== Role.ADMIN) {
+            query.user = user._id;
+        }
+
+        const orders = await Order.find(query)
+            .populate("user", "username email fullName")
+            .populate("items.product", "name price")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error("Error getting orders by product ID:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 module.exports = {
     createOrder,
     getOrders,
     getOrderById,
+    getOrderByProductId,
     updateOrderStatus,
 };
+
