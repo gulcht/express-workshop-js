@@ -1,0 +1,31 @@
+
+services:
+  mongodb:
+    image: mongo:8
+    container_name: mongodb
+
+    ports:
+      - "27017:27017"
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+    volumes:
+      - mongodb_data:/data/db
+
+  app:
+    build: .
+    container_name: express_app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      MONGO_URI: mongodb://admin:password@mongodb:27017/?authSource=admin
+      JWT_SECRET: 67f6a47e63963170900fe5b7fed7da1dc918c0fde25acf33e7c4b1dcc904b98b
+      JWT_REFRESH_SECRET: 8d98419feb5401a0341497a576c6cfb4fbb9774db95dc76fe302e64fc1783fde
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
