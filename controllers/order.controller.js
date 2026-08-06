@@ -1,6 +1,7 @@
 const Order = require("../models/order.model.js");
 const Product = require("../models/product.model.js");
 const { Role } = require("../models/user.model.js");
+const { successResponse, errorResponse } = require("../utils/response.js");
 
 const createOrder = async (req, res) => {
     try {
@@ -8,8 +9,7 @@ const createOrder = async (req, res) => {
         const { items } = req.body; // items: [{ product: string, quantity: number }]
 
         if (!items || !Array.isArray(items) || items.length === 0) {
-            res.status(400).json({ message: "Order must contain at least one item." });
-            return;
+            return errorResponse(res, "Order must contain at least one item.", 400);
         }
 
         let totalAmount = 0;
@@ -20,21 +20,20 @@ const createOrder = async (req, res) => {
             const { product: productId, quantity } = item;
 
             if (!productId || !quantity || quantity < 1) {
-                res.status(400).json({ message: "Invalid product ID or quantity." });
-                return;
+                return errorResponse(res, "Invalid product ID or quantity.", 400);
             }
 
             const product = await Product.findById(productId);
             if (!product) {
-                res.status(404).json({ message: `Product not found: ${productId}` });
-                return;
+                return errorResponse(res, `Product not found: ${productId}`, 404);
             }
 
             if (product.stock < quantity) {
-                res.status(400).json({
-                    message: `Insufficient stock for product '${product.name}'. Available: ${product.stock}, requested: ${quantity}`,
-                });
-                return;
+                return errorResponse(
+                    res,
+                    `Insufficient stock for product '${product.name}'. Available: ${product.stock}, requested: ${quantity}`,
+                    400
+                );
             }
 
             const itemPrice = product.price;
@@ -63,13 +62,10 @@ const createOrder = async (req, res) => {
         await newOrder.save();
         await newOrder.populate("items.product", "name price");
 
-        res.status(201).json({
-            message: "Order placed successfully",
-            order: newOrder,
-        });
+        return successResponse(res, newOrder, "Order placed successfully", 201);
     } catch (error) {
         console.error("Error creating order:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -77,8 +73,7 @@ const getOrders = async (req, res) => {
     try {
         const user = req.user;
         if (!user) {
-            res.status(401).json({ message: "Unauthorized" });
-            return;
+            return errorResponse(res, "Unauthorized", 401);
         }
 
         let orders;
@@ -93,10 +88,10 @@ const getOrders = async (req, res) => {
                 .sort({ createdAt: -1 });
         }
 
-        res.status(200).json({ orders });
+        return successResponse(res, orders, "Get orders successfully", 200);
     } catch (error) {
         console.error("Error getting orders:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -106,8 +101,7 @@ const getOrderById = async (req, res) => {
         const user = req.user;
 
         if (!user) {
-            res.status(401).json({ message: "Unauthorized" });
-            return;
+            return errorResponse(res, "Unauthorized", 401);
         }
 
         const order = await Order.findById(id)
@@ -115,19 +109,17 @@ const getOrderById = async (req, res) => {
             .populate("items.product", "name price");
 
         if (!order) {
-            res.status(404).json({ message: "Order not found" });
-            return;
+            return errorResponse(res, "Order not found", 404);
         }
 
         if (user.role !== Role.ADMIN && order.user._id.toString() !== user._id.toString()) {
-            res.status(403).json({ message: "Access denied - You can only view your own orders" });
-            return;
+            return errorResponse(res, "Access denied - You can only view your own orders", 403);
         }
 
-        res.status(200).json({ order });
+        return successResponse(res, order, "Get order successfully", 200);
     } catch (error) {
         console.error("Error getting order by ID:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -139,17 +131,17 @@ const updateOrderStatus = async (req, res) => {
         const validStatuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
 
         if (!status || !validStatuses.includes(status)) {
-            res.status(400).json({
-                message: `Invalid status. Valid statuses are: ${validStatuses.join(", ")}`,
-            });
-            return;
+            return errorResponse(
+                res,
+                `Invalid status. Valid statuses are: ${validStatuses.join(", ")}`,
+                400
+            );
         }
 
         const order = await Order.findById(id);
 
         if (!order) {
-            res.status(404).json({ message: "Order not found" });
-            return;
+            return errorResponse(res, "Order not found", 404);
         }
 
         order.status = status;
@@ -157,13 +149,10 @@ const updateOrderStatus = async (req, res) => {
         await order.populate("user", "username email fullName");
         await order.populate("items.product", "name price");
 
-        res.status(200).json({
-            message: "Order status updated successfully",
-            order,
-        });
+        return successResponse(res, order, "Order status updated successfully", 200);
     } catch (error) {
         console.error("Error updating order status:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -173,8 +162,7 @@ const getOrderByProductId = async (req, res) => {
         const user = req.user;
 
         if (!user) {
-            res.status(401).json({ message: "Unauthorized" });
-            return;
+            return errorResponse(res, "Unauthorized", 401);
         }
 
         let query = { "items.product": productId };
@@ -188,10 +176,10 @@ const getOrderByProductId = async (req, res) => {
             .populate("items.product", "name price")
             .sort({ createdAt: -1 });
 
-        res.status(200).json({ orders });
+        return successResponse(res, orders, "Get orders by product ID successfully", 200);
     } catch (error) {
         console.error("Error getting orders by product ID:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -202,4 +190,5 @@ module.exports = {
     getOrderByProductId,
     updateOrderStatus,
 };
+
 

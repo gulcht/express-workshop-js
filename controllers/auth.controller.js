@@ -2,19 +2,18 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model.js");
 const { generateToken } = require("../utils/generateToken.js");
+const { successResponse, errorResponse } = require("../utils/response.js");
 
 const register = async (req, res) => {
     try {
         const { username, fullName, password, email } = req.body;
 
         if (!username || !fullName || !password || !email) {
-            res.status(400).json({ message: "All fields (username, fullName, password, email) are required." });
-            return;
+            return errorResponse(res, "All fields (username, fullName, password, email) are required.", 400);
         }
 
         if (password.length < 8) {
-            res.status(400).json({ message: "Password must be at least 8 characters long." });
-            return;
+            return errorResponse(res, "Password must be at least 8 characters long.", 400);
         }
 
         // Check if username or email already exists
@@ -24,12 +23,10 @@ const register = async (req, res) => {
 
         if (existingUser) {
             if (existingUser.username === username) {
-                res.status(400).json({ message: "Username already exists." });
-                return;
+                return errorResponse(res, "Username already exists.", 400);
             }
             if (existingUser.email === email) {
-                res.status(400).json({ message: "Email already exists." });
-                return;
+                return errorResponse(res, "Email already exists.", 400);
             }
         }
 
@@ -47,22 +44,21 @@ const register = async (req, res) => {
 
         await newUser.save();
 
-        res.status(201).json({
-            message: "User registered successfully.",
-            user: {
-                id: newUser._id,
-                username: newUser.username,
-                fullName: newUser.fullName,
-                email: newUser.email,
-                role: newUser.role,
-                isApprove: newUser.isApprove,
-                createdAt: newUser.createdAt,
-                updatedAt: newUser.updatedAt,
-            },
-        });
+        const userData = {
+            id: newUser._id,
+            username: newUser.username,
+            fullName: newUser.fullName,
+            email: newUser.email,
+            role: newUser.role,
+            isApprove: newUser.isApprove,
+            createdAt: newUser.createdAt,
+            updatedAt: newUser.updatedAt,
+        };
+
+        return successResponse(res, userData, "User registered successfully.", 201);
     } catch (error) {
         console.error("Register Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -72,8 +68,7 @@ const login = async (req, res) => {
 
         const loginIdentifier = username || email;
         if (!loginIdentifier || !password) {
-            res.status(400).json({ message: "Username/email and password are required." });
-            return;
+            return errorResponse(res, "Username/email and password are required.", 400);
         }
 
         const user = await User.findOne({
@@ -81,19 +76,16 @@ const login = async (req, res) => {
         });
 
         if (!user) {
-            res.status(400).json({ message: "Invalid credentials." });
-            return;
+            return errorResponse(res, "Invalid credentials.", 400);
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (!isPasswordCorrect) {
-            res.status(400).json({ message: "Invalid credentials." });
-            return;
+            return errorResponse(res, "Invalid credentials.", 400);
         }
 
         if (!user.isApprove) {
-            res.status(403).json({ message: "Your account is pending approval. Please contact the administrator to approve your account." });
-            return;
+            return errorResponse(res, "Your account is pending approval. Please contact the administrator to approve your account.", 403);
         }
 
         const { accessToken, refreshToken } = generateToken(user._id);
@@ -112,22 +104,21 @@ const login = async (req, res) => {
             secure: process.env.NODE_ENV !== "development",
         });
 
-        res.status(200).json({
-            message: "Logged in successfully.",
-            user: {
-                id: user._id,
-                username: user.username,
-                fullName: user.fullName,
-                email: user.email,
-                role: user.role,
-                isApprove: user.isApprove,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt,
-            },
-        });
+        const userData = {
+            id: user._id,
+            username: user.username,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            isApprove: user.isApprove,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        };
+
+        return successResponse(res, userData, "Logged in successfully.", 200);
     } catch (error) {
         console.error("Login Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -135,10 +126,10 @@ const logout = async (req, res) => {
     try {
         res.cookie("accessToken", "", { maxAge: 0 });
         res.cookie("refreshToken", "", { maxAge: 0 });
-        res.status(200).json({ message: "Logged out successfully." });
+        return successResponse(res, [], "Logged out successfully.", 200);
     } catch (error) {
         console.error("Logout Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -147,8 +138,7 @@ const refreshAccessToken = async (req, res) => {
         const refreshToken = req.cookies?.refreshToken;
 
         if (!refreshToken) {
-            res.status(401).json({ message: "Refresh token missing." });
-            return;
+            return errorResponse(res, "Refresh token missing.", 401);
         }
 
         const refreshSecret = process.env.JWT_REFRESH_SECRET;
@@ -160,15 +150,13 @@ const refreshAccessToken = async (req, res) => {
         try {
             decoded = jwt.verify(refreshToken, refreshSecret);
         } catch (err) {
-            res.status(401).json({ message: "Invalid or expired refresh token." });
-            return;
+            return errorResponse(res, "Invalid or expired refresh token.", 401);
         }
 
         const userId = decoded.userId;
         const user = await User.findById(userId);
         if (!user) {
-            res.status(404).json({ message: "User not found." });
-            return;
+            return errorResponse(res, "User not found.", 404);
         }
 
         const tokens = generateToken(user._id);
@@ -187,12 +175,10 @@ const refreshAccessToken = async (req, res) => {
             secure: process.env.NODE_ENV !== "development",
         });
 
-        res.status(200).json({
-            message: "Access token refreshed successfully.",
-        });
+        return successResponse(res, [], "Access token refreshed successfully.", 200);
     } catch (error) {
         console.error("Refresh Access Token Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 

@@ -1,12 +1,13 @@
 const Product = require("../models/product.model.js");
+const { successResponse, errorResponse } = require("../utils/response.js");
 
 const getProducts = async (req, res) => {
     try {
         const products = await Product.find().sort({ createdAt: -1 });
-        res.status(200).json(products);
+        return successResponse(res, products, "success", 200);
     } catch (error) {
         console.error("Error in getProducts:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -15,13 +16,12 @@ const getProductById = async (req, res) => {
         const { id } = req.params;
         const product = await Product.findById(id);
         if (!product) {
-            res.status(404).json({ message: "Product not found" });
-            return;
+            return errorResponse(res, "Product not found", 404);
         }
-        res.status(200).json(product);
+        return successResponse(res, product, "success", 200);
     } catch (error) {
         console.error("Error in getProductById:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -30,8 +30,7 @@ const createProduct = async (req, res) => {
         const { name, description, price, stock, category, imageUrl } = req.body;
 
         if (!name || price === undefined || stock === undefined) {
-            res.status(400).json({ message: "Name, price, and stock are required fields" });
-            return;
+            return errorResponse(res, "Name, price, and stock are required fields", 400);
         }
 
         const newProduct = new Product({
@@ -44,14 +43,13 @@ const createProduct = async (req, res) => {
         });
 
         await newProduct.save();
-        res.status(201).json(newProduct);
+        return successResponse(res, newProduct, "Product created successfully", 201);
     } catch (error) {
         console.error("Error in createProduct:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
-// PUT /api/products/:id - Update product by ID (Admin only)
 const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
@@ -61,32 +59,29 @@ const updateProduct = async (req, res) => {
         });
 
         if (!updatedProduct) {
-            res.status(404).json({ message: "Product not found" });
-            return;
+            return errorResponse(res, "Product not found", 404);
         }
 
-        res.status(200).json(updatedProduct);
+        return successResponse(res, updatedProduct, "Product updated successfully", 200);
     } catch (error) {
         console.error("Error in updateProduct:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
-// DELETE /api/products/:id - Delete product by ID (Admin only)
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const deletedProduct = await Product.findByIdAndDelete(id);
 
         if (!deletedProduct) {
-            res.status(404).json({ message: "Product not found" });
-            return;
+            return errorResponse(res, "Product not found", 404);
         }
 
-        res.status(200).json({ message: "Product deleted successfully" });
+        return successResponse(res, [], "Product deleted successfully", 200);
     } catch (error) {
         console.error("Error in deleteProduct:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -97,3 +92,4 @@ module.exports = {
     updateProduct,
     deleteProduct,
 };
+

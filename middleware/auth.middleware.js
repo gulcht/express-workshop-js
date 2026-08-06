@@ -1,14 +1,14 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model.js");
 const { Role } = require("../models/user.model.js");
+const { errorResponse } = require("../utils/response.js");
 
 const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies?.accessToken;
 
     if (!token) {
-      res.status(401).json({ message: "Unauthorized - No Token Provided" });
-      return;
+      return errorResponse(res, "Unauthorized - No Token Provided", 401);
     }
 
     const secret = process.env.JWT_SECRET;
@@ -20,21 +20,19 @@ const protectRoute = async (req, res, next) => {
     try {
       decoded = jwt.verify(token, secret);
     } catch (err) {
-      res.status(401).json({ message: "Unauthorized - Invalid Token" });
-      return;
+      return errorResponse(res, "Unauthorized - Invalid Token", 401);
     }
 
     const user = await User.findById(decoded.userId).select("-password");
     if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      return errorResponse(res, "User not found", 404);
     }
 
     req.user = user;
     next();
   } catch (error) {
     console.error("Error in protectRoute middleware:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return errorResponse(res, error.message || "Internal server error", 500);
   }
 };
 
@@ -42,7 +40,7 @@ const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === Role.ADMIN) {
     next();
   } else {
-    res.status(403).json({ message: "Access denied" });
+    return errorResponse(res, "Access denied", 403);
   }
 };
 
@@ -50,3 +48,4 @@ module.exports = {
   protectRoute,
   adminOnly,
 };
+

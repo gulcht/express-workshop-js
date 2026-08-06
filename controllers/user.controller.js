@@ -1,10 +1,12 @@
 const User = require("../models/user.model.js");
+const { successResponse, errorResponse } = require("../utils/response.js");
 
 const getUsers = async (req, res) => {
     try {
-        res.status(200).json({ message: "Get users endpoint" });
+        const users = await User.find().select("-password");
+        return successResponse(res, users, "Get users successfully", 200);
     } catch (error) {
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -14,29 +16,27 @@ const approveUser = async (req, res) => {
 
         const user = await User.findById(id);
         if (!user) {
-            res.status(404).json({ message: "User not found" });
-            return;
+            return errorResponse(res, "User not found", 404);
         }
 
         user.isApprove = true;
         await user.save();
 
-        res.status(200).json({
-            message: "User approved successfully",
-            user: {
-                id: user._id,
-                username: user.username,
-                fullName: user.fullName,
-                email: user.email,
-                role: user.role,
-                isApprove: user.isApprove,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt,
-            },
-        });
+        const userData = {
+            id: user._id,
+            username: user.username,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            isApprove: user.isApprove,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        };
+
+        return successResponse(res, userData, "User approved successfully", 200);
     } catch (error) {
         console.error("Approve User Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return errorResponse(res, error.message || "Internal server error", 500);
     }
 };
 
@@ -44,3 +44,4 @@ module.exports = {
     getUsers,
     approveUser,
 };
+
