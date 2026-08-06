@@ -99,7 +99,7 @@ const login = async (req, res) => {
         const { accessToken, refreshToken } = generateToken(user._id);
 
         res.cookie("accessToken", accessToken, {
-            maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+            maxAge: 15 * 60 * 60 * 1000, // 15 min
             httpOnly: true,
             sameSite: "strict",
             secure: process.env.NODE_ENV !== "development",
