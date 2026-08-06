@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const seedAdmin = require("./seedAdmin");
 
 const connectMongoDB = async () => {
     try {
@@ -9,6 +10,9 @@ const connectMongoDB = async () => {
 
         const conn = await mongoose.connect(mongoUri);
         console.log(`MongoDB connected: ${conn.connection.host}`);
+
+        // Seed initial admin if non-existent
+        await seedAdmin();
     } catch (error) {
         console.error(`Error connecting to MongoDB: ${error.message}`);
         process.exit(1);
