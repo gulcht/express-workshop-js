@@ -5,7 +5,7 @@ const { protectRoute, adminOnly } = require("../middleware/auth.middleware.js");
 const router = express.Router();
 
 router.use(protectRoute);
-router.get("/", getUsers);
+router.get("/", adminOnly, getUsers);
 router.patch("/:id/approve", adminOnly, approveUser);
 
 module.exports = router;
