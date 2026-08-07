@@ -40,8 +40,18 @@ const approveUser = async (req, res) => {
     }
 };
 
+const getMe = async (req, res) => {
+    try {
+        return successResponse(res, req.user, "Get profile successfully", 200);
+    } catch (error) {
+        return errorResponse(res, error.message || "Internal server error", 500);
+    }
+};
+
 module.exports = {
     getUsers,
     approveUser,
+    getMe,
 };
+
 
