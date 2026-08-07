@@ -10,18 +10,16 @@ const { protectRoute, adminOnly } = require("../middleware/auth.middleware.js");
 const { getOrdersByProductId, createOrderByProductId } = require("../controllers/order.controller.js");
 const router = express.Router();
 
-// Public routes
+router.use(protectRoute);
+
 router.get("/", getProducts);
 router.get("/:id", getProductById);
-
-// Protected routes
-router.post("/:id/orders", protectRoute, createOrderByProductId);
-router.get("/:productId/orders", protectRoute, getOrdersByProductId);
+router.post("/:id/orders", createOrderByProductId);
+router.get("/:productId/orders", getOrdersByProductId);
 
 // Protected Admin-only routes
-router.post("/", protectRoute, adminOnly, createProduct);
-router.put("/:id", protectRoute, adminOnly, updateProduct);
-router.delete("/:id", protectRoute, adminOnly, deleteProduct);
+router.post("/", adminOnly, createProduct);
+router.put("/:id", adminOnly, updateProduct);
+router.delete("/:id", adminOnly, deleteProduct);
 
 module.exports = router;
-
