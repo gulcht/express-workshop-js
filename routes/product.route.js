@@ -7,12 +7,13 @@ const {
     deleteProduct,
 } = require("../controllers/product.controller.js");
 const { protectRoute, adminOnly } = require("../middleware/auth.middleware.js");
-
+const { getOrdersByProductId } = require("../controllers/order.controller.js");
 const router = express.Router();
 
 // Public routes
 router.get("/", getProducts);
 router.get("/:id", getProductById);
+router.get("/:productId/orders", getOrdersByProductId);
 
 // Protected Admin-only routes
 router.post("/", protectRoute, adminOnly, createProduct);

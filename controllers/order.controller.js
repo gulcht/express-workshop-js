@@ -156,7 +156,7 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
-const getOrderByProductId = async (req, res) => {
+const getOrdersByProductId = async (req, res) => {
     try {
         const { productId } = req.params;
         const user = req.user;
@@ -187,7 +187,7 @@ module.exports = {
     createOrder,
     getOrders,
     getOrderById,
-    getOrderByProductId,
+    getOrdersByProductId,
     updateOrderStatus,
 };
 
