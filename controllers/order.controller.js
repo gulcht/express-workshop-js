@@ -156,6 +156,7 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+// params = productId
 const getOrdersByProductId = async (req, res) => {
     try {
         const { productId } = req.params;
@@ -183,12 +184,70 @@ const getOrdersByProductId = async (req, res) => {
     }
 };
 
+// params = productId
+const createOrderByProductId = async (req, res) => {
+    try {
+        const userId = req.user?._id;
+        const { id: productId } = req.params;
+        const quantity = req.body?.quantity ? parseInt(req.body.quantity, 10) : 1;
+
+        if (!productId || isNaN(quantity) || quantity < 1) {
+            return errorResponse(res, "Invalid product ID or quantity.", 400);
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return errorResponse(res, `Product not found: ${productId}`, 404);
+        }
+
+        if (product.stock < quantity) {
+            return errorResponse(
+                res,
+                `Insufficient stock for product '${product.name}'. Available: ${product.stock}, requested: ${quantity}`,
+                400
+            );
+        }
+
+        const itemPrice = product.price;
+        const totalAmount = itemPrice * quantity;
+
+        const orderItems = [
+            {
+                product: product._id,
+                quantity,
+                price: itemPrice,
+            },
+        ];
+
+        // Update stock
+        await Product.findByIdAndUpdate(productId, {
+            $inc: { stock: -quantity },
+        });
+
+        const newOrder = new Order({
+            user: userId,
+            items: orderItems,
+            totalAmount,
+        });
+
+        await newOrder.save();
+        await newOrder.populate("items.product", "name price");
+
+        return successResponse(res, newOrder, "Order placed successfully", 201);
+    } catch (error) {
+        console.error("Error creating order by product ID:", error);
+        return errorResponse(res, error.message || "Internal server error", 500);
+    }
+};
+
 module.exports = {
     createOrder,
     getOrders,
     getOrderById,
     getOrdersByProductId,
+    createOrderByProductId,
     updateOrderStatus,
 };
+
 
 
