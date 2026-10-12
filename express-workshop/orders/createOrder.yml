@@ -1,0 +1,30 @@
+info:
+  name: createOrder
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: localhost:3000/api/v1/orders
+  body:
+    type: json
+    data: |-
+      {
+            "items": [
+              {
+                "product": "6a753c6a73b96ea922b211e5",
+                "quantity": 999
+              },
+              {
+                "product": "6a753e1a73b96ea922b211e6",
+                "quantity": 1
+              }
+            ]
+          }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

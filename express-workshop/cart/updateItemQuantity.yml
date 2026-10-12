@@ -1,0 +1,21 @@
+info:
+  name: updateItemQuantity
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: localhost:3000/api/v1/cart/items/6a753c6a73b96ea922b211e5
+  body:
+    type: json
+    data: |-
+      {
+        "quantity": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

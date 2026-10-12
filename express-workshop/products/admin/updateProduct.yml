@@ -1,0 +1,26 @@
+info:
+  name: updateProduct
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: localhost:3000/api/v1/products/6a7595834918efadd70e7033
+  body:
+    type: json
+    data: |2-
+          {
+            "name": "abc",
+            "description": "achds",
+            "price": 40,
+            "stock": 20,
+            "category": "",
+            "imageUrl": "https://example.com/images/headphones.jpg"
+          }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

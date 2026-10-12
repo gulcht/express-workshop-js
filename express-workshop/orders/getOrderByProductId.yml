@@ -1,0 +1,15 @@
+info:
+  name: getOrderByProductId
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: localhost:3000/api/v1/products/6a753e1a73b96ea922b211e6/orders
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

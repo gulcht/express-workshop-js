@@ -5,6 +5,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const connectMongoDB = require('./db/db');
+var cors = require("cors");
 
 // Connect to MongoDB
 connectMongoDB();
@@ -12,7 +13,13 @@ connectMongoDB();
 var indexRouter = require('./routes/index');
 
 var app = express();
+const corsOptions = {
+  origin: 'http://localhost:8080', // Replace with an array if supporting multiple origins
+  credentials: true,
+  optionsSuccessStatus: 200 // For legacy browser support (IE11, various SmartTVs)
+};
 
+app.use(cors(corsOptions));
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');

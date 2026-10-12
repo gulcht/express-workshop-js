@@ -1,15 +1,26 @@
 const Order = require("../models/order.model.js");
 const Product = require("../models/product.model.js");
+const Cart = require("../models/cart.model.js");
 const { Role } = require("../models/user.model.js");
 const { successResponse, errorResponse } = require("../utils/response.js");
 
 const createOrder = async (req, res) => {
     try {
         const userId = req.user?._id;
-        const { items } = req.body; // items: [{ product: string, quantity: number }]
+        let { items } = req.body || {}; // items: [{ product: string, quantity: number }]
 
+        let isCartCheckout = false;
+        // If items are not provided or empty array, attempt to checkout user's cart
         if (!items || !Array.isArray(items) || items.length === 0) {
-            return errorResponse(res, "Order must contain at least one item.", 400);
+            const userCart = await Cart.findOne({ user: userId });
+            if (!userCart || !userCart.items || userCart.items.length === 0) {
+                return errorResponse(res, "Cart is empty. Order must contain at least one item.", 400);
+            }
+            items = userCart.items.map((item) => ({
+                product: item.product.toString(),
+                quantity: item.quantity,
+            }));
+            isCartCheckout = true;
         }
 
         let totalAmount = 0;
@@ -61,6 +72,11 @@ const createOrder = async (req, res) => {
 
         await newOrder.save();
         await newOrder.populate("items.product", "name price");
+
+        // If order was created from cart, clear cart items
+        if (isCartCheckout) {
+            await Cart.findOneAndUpdate({ user: userId }, { $set: { items: [] } });
+        }
 
         return successResponse(res, newOrder, "Order placed successfully", 201);
     } catch (error) {

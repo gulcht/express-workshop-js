@@ -1,0 +1,26 @@
+info:
+  name: addProduct
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: localhost:3000/api/v1/products
+  body:
+    type: json
+    data: |2-
+          {
+            "name": "abc",
+            "description": "",
+            "price": 20,
+            "stock": 10,
+            "category": "",
+            "imageUrl": "https://example.com/images/headphones.jpg"
+          }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

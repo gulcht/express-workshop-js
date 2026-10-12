@@ -1,0 +1,22 @@
+info:
+  name: login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: localhost:3000/api/v1/login
+  body:
+    type: json
+    data: |2-
+          {
+            "email": "johnuser3@example.com",
+            "password": "securePassword123"
+          }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

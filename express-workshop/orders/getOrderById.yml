@@ -1,0 +1,15 @@
+info:
+  name: getOrderById
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: localhost:3000/api/v1/orders/6a744c9240a10296ca862ba8
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

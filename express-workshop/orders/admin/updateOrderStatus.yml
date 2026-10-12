@@ -1,0 +1,21 @@
+info:
+  name: updateOrderStatus
+  type: http
+  seq: 1
+
+http:
+  method: PATCH
+  url: localhost:3000/api/v1/orders/6a73f7acfa6d8a989fb9e9fc/status
+  body:
+    type: json
+    data: |-
+      {
+         "status": "SHIPPED"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

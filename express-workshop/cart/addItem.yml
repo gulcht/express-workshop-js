@@ -1,0 +1,22 @@
+info:
+  name: addItem
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: localhost:3000/api/v1/cart/items
+  body:
+    type: json
+    data: |-
+      {
+        "productId": "6a753c6a73b96ea922b211e5",
+        "quantity": 1
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
